@@ -12,7 +12,7 @@ const enhancer = compose(
         stateTransformer: state => {
             let ret = _.omit(state, 'auth');
 
-            ret.cards = _.omit(ret.cards, 'alliances', 'cards', 'factions', 'packs');
+            ret.cards = _.omit(ret.cards, 'cards', 'affiliations');
             return ret;
         }
     })));

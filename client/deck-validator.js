@@ -67,14 +67,14 @@ function rulesForSeekerRole(element) {
     };
 }
 
-function rulesForSupportRole(faction) {
+function rulesForSupportRole(affiliation) {
     return {
         influence: 8,
         roleRestrictions: ['support'],
         rules: [
             {
                 message: 'Support roles can only be used with the match alliance clan',
-                condition: deck => deck.alliance.value === faction
+                condition: deck => deck.alliance.value === affiliation
             }
         ]
     };
@@ -121,36 +121,11 @@ class DeckValidator {
         let errors = [];
         let unreleasedCards = [];
         let rules = this.getRules(deck);
-        let stronghold = deck.stronghold.length > 0 ? deck.stronghold[0].card : null;
-        let role = deck.role.length > 0 ? deck.role[0].card : null;
-        let provinceCount = getDeckCount(deck.provinceCards);
-        let dynastyCount = getDeckCount(deck.dynastyCards);
-        let conflictCount = getDeckCount(deck.conflictCards);
+        let objectiveCount = getDeckCount(deck.objectiveCards);
+        let mainDeckCount = getDeckCount(deck.mainDeckCards);
 
-        if(deck.stronghold.length > 1) {
-            errors.push('Too many strongholds');
-        }
-
-        if(deck.role.length > 1) {
-            errors.push('Too many roles');
-        }
-
-        if(provinceCount < rules.requiredProvinces) {
-            errors.push('Too few province cards');
-        } else if(provinceCount > rules.requiredProvinces) {
-            errors.push('Too many province cards');
-        }
-
-        if(dynastyCount < rules.minimumDynasty) {
-            errors.push('Too few dynasty cards');
-        } else if(dynastyCount > rules.maximumDynasty) {
-            errors.push('Too many dynasty cards');
-        }
-
-        if(conflictCount < rules.minimumConflict) {
-            errors.push('Too few conflict cards');
-        } else if(conflictCount > rules.maximumConflict) {
-            errors.push('Too many conflict cards');
+        if(objectiveCount < rules.requiredObjectives) {
+            errors.push('Too few objectives cards');
         }
 
         _.each(rules.rules, rule => {
@@ -159,11 +134,11 @@ class DeckValidator {
             }
         });
 
-        let allCards = deck.provinceCards.concat(deck.dynastyCards).concat(deck.conflictCards);
+        let allCards = deck.objectiveCards.concat(deck.objectiveCards).concat(deck.mainDeckCards);
         let cardCountByName = {};
 
         _.each(allCards, cardQuantity => {
-            cardCountByName[cardQuantity.card.name] = cardCountByName[cardQuantity.card.name] || { name: cardQuantity.card.name, faction: cardQuantity.card.clan, influence: cardQuantity.card.influence_cost, limit: cardQuantity.card.deck_limit, count: 0, allowed_clans: cardQuantity.card.allowed_clans };
+            cardCountByName[cardQuantity.card.name] = cardCountByName[cardQuantity.card.name] || { name: cardQuantity.card.name, affiliation: cardQuantity.card.clan, influence: cardQuantity.card.influence_cost, limit: cardQuantity.card.deck_limit, count: 0, allowed_clans: cardQuantity.card.allowed_clans };
             cardCountByName[cardQuantity.card.name].count += cardQuantity.count;
 
             if(!rules.mayInclude(cardQuantity.card) || rules.cannotInclude(cardQuantity.card) || (cardQuantity.card.role_restriction && !rules.roleRestrictions.includes(cardQuantity.card.role_restriction))) {
@@ -174,16 +149,6 @@ class DeckValidator {
                 unreleasedCards.push(cardQuantity.card.name + ' is not yet released');
             }
         });
-
-        if(!stronghold) {
-            errors.push('No stronghold');
-        } else if(!isCardInReleasedPack(this.packs, stronghold)) {
-            unreleasedCards.push(stronghold.name + ' is not yet released');
-        }
-
-        if(role && !isCardInReleasedPack(this.packs, role)) {
-            unreleasedCards.push(role.name + ' is not yet released');
-        }
 
         _.each(rules.maxProvince, (amount, element) => {
             let provinces = _.filter(deck.provinceCards, card => card.card.element === element);
@@ -199,7 +164,7 @@ class DeckValidator {
         });
 
         let totalInfluence = _.reduce(cardCountByName, (total, card) => {
-            if(card.influence && card.faction !== deck.faction.value) {
+            if(card.influence && card.affiliation !== deck.affiliation.value) {
                 return total + card.influence * card.count;
             }
             return total;
@@ -215,47 +180,25 @@ class DeckValidator {
         return {
             basicRules: errors.length === 0,
             noUnreleasedCards: unreleasedCards.length === 0,
-            officialRole: !role || openRoles.includes(role.id),
             faqRestrictedList: restrictedResult.valid && bannedResult.valid,
             faqVersion: restrictedResult.version,
-            provinceCount: provinceCount,
-            dynastyCount: dynastyCount,
-            conflictCount: conflictCount,
+            objectiveCount: objectiveCount,
+            mainDeckCount: mainDeckCount,
             extendedStatus: errors.concat(unreleasedCards, restrictedResult.errors, bannedResult.errors)
         };
     }
 
     getRules(deck) {
         const standardRules = {
-            minimumDynasty: 40,
-            maximumDynasty: 45,
-            minimumConflict: 40,
-            maximumConflict: 45,
-            requiredProvinces: 5,
-            maxProvince: {
-                air: 1,
-                earth: 1,
-                fire: 1,
-                void: 1,
-                water: 1
-            }
+            minimumObjective: 10,
         };
-        let factionRules = this.getFactionRules(deck.faction.value.toLowerCase());
-        let allianceRules = this.getAllianceRules(deck.alliance.value.toLowerCase(), deck.faction.value.toLowerCase());
-        let roleRules = this.getRoleRules(deck.role.length > 0 ? deck.role[0].card : null);
-        let strongholdRules = this.getStrongholdRules(deck.stronghold.length > 0 ? deck.stronghold[0].card : null);
-        return this.combineValidationRules([standardRules, factionRules, allianceRules, roleRules, strongholdRules]);
+        let affiliationRules = this.getAffiliationRules(deck.affiliation.value.toLowerCase());
+        return this.combineValidationRules([standardRules, affiliationRules]);
     }
 
-    getFactionRules(faction) {
+    getAffiliationRules(affiliation) {
         return {
-            mayInclude: card => card.clan === faction || card.clan === 'neutral'
-        };
-    }
-
-    getAllianceRules(clan, faction) {
-        return {
-            mayInclude: card => card.side === 'conflict' && card.clan === clan && card.allowed_clans.includes(faction)
+            mayInclude: card => card.side === affiliation.side
         };
     }
 
@@ -268,7 +211,7 @@ class DeckValidator {
             rules: [
                 {
                     message: 'Your stronghold must match your clan',
-                    condition: deck => stronghold.clan === deck.faction.value
+                    condition: deck => stronghold.clan === deck.affiliation.value
                 }
             ]
 
@@ -462,10 +405,10 @@ module.exports = function validateDeck(deck, packs) { // eslint-disable-line no-
         isValid = false;
     }
 
-    //Check for out of faction cards in stronghold, provinces, dynasty
+    //Check for out of affiliation cards in stronghold, provinces, dynasty
     if(_.any(combinedClan, card => {
-        if(!(_.contains([deck.faction.value,'neutral'],card.card.clan))) {
-            extendedStatus.push(card.card.name + ' is not in faction ' + deck.faction.value);
+        if(!(_.contains([deck.affiliation.value,'neutral'],card.card.clan))) {
+            extendedStatus.push(card.card.name + ' is not in affiliation ' + deck.affiliation.value);
             //console.log(card.card.label + ' has clan ' + card.card.clan);
             return true;
         }
@@ -476,10 +419,10 @@ module.exports = function validateDeck(deck, packs) { // eslint-disable-line no-
         isValid = false;
     }
 
-    //Check for out of faction cards in conflict
+    //Check for out of affiliation cards in conflict
     if(_.any(deck.conflictCards, card => {
-        if(!(_.contains([deck.faction.value, deck.alliance.value, 'neutral'],card.card.clan))) {
-            extendedStatus.push(card.card.name + ' is not in faction ' + deck.faction.value);
+        if(!(_.contains([deck.affiliation.value, deck.alliance.value, 'neutral'],card.card.clan))) {
+            extendedStatus.push(card.card.name + ' is not in affiliation ' + deck.affiliation.value);
             return true;
         }
 

@@ -57,15 +57,12 @@ export function deleteDeck(deck) {
 }
 
 export function saveDeck(deck) {
+    console.log(deck);
     let str = JSON.stringify({
         deckName: deck.name,
-        faction: { name: deck.faction.name, value: deck.faction.value },
-        alliance: { name: deck.alliance.name, value: deck.alliance.value },
-        stronghold: formatCards(deck.stronghold),
-        role: formatCards(deck.role),
-        provinceCards: formatCards(deck.provinceCards),
-        conflictCards: formatCards(deck.conflictCards),
-        dynastyCards: formatCards(deck.dynastyCards)
+        affiliation: { name: deck.affiliation.name, value: deck.affiliation.value },
+        objectiveCards: formatCards(deck.objectiveCards),
+        mainDeckCards: formatCards(deck.mainDeckCards),
     });
 
     return {
@@ -87,6 +84,6 @@ export function clearDeckStatus() {
 
 function formatCards(cards) {
     return _.map(cards, card => {
-        return { card: { id: card.card.id }, count: card.count };
+        return { card: { code: card.card.code }, count: card.count };
     });
 }

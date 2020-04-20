@@ -13,38 +13,19 @@ function selectDeck(state, deck) {
 
 function processDecks(decks, state) {
     _.each(decks, deck => {
-        if(!state.cards || !deck.faction) {
+        if(!state.cards || !deck.affiliation) {
             deck.status = {};
             return;
         }
 
-        deck.faction = state.factions[deck.faction.value];
-        if(deck.alliance) {
-            if(deck.alliance.value === '') {
-                deck.alliance = { name: '', value: '' };
-            } else {
-                deck.alliance = state.factions[deck.alliance.value];
-            }
-        }
+        deck.affiliation = state.affiliations[deck.affiliation.value];
 
-        deck.stronghold = _.map(deck.stronghold, card => {
-            return { count: card.count, card: state.cards[card.card.id] };
+        deck.objectiveCards = _.map(deck.objectiveCards, card => {
+            return { count: card.count, card: state.cards[card.card.code] };
         });
 
-        deck.role = _.map(deck.role, card => {
-            return { count: card.count, card: state.cards[card.card.id] };
-        });
-
-        deck.provinceCards = _.map(deck.provinceCards, card => {
-            return { count: card.count, card: state.cards[card.card.id] };
-        });
-
-        deck.conflictCards = _.map(deck.conflictCards, card => {
-            return { count: card.count, card: state.cards[card.card.id] };
-        });
-
-        deck.dynastyCards = _.map(deck.dynastyCards, card => {
-            return { count: card.count, card: state.cards[card.card.id] };
+        deck.mainDeckCards = _.map(deck.mainDeckCards, card => {
+            return { count: card.count, card: state.cards[card.card.code] };
         });
 
         deck.status = validateDeck(deck, { packs: state.packs });
@@ -76,15 +57,15 @@ export default function(state = {}, action) {
             return Object.assign({}, state, {
                 packs: action.response.packs
             });
-        case 'RECEIVE_FACTIONS':
-            var factions = {};
+        case 'RECEIVE_AFFILIATIONS':
+            var affiliations = {};
 
-            _.each(action.response.factions, faction => {
-                factions[faction.value] = faction;
+            _.each(action.response.affiliations, affiliation => {
+                affiliations[affiliation.value] = affiliation;
             });
 
             return Object.assign({}, state, {
-                factions: factions
+                affiliations: affiliations
             });
         case 'ZOOM_CARD':
             return Object.assign({}, state, {

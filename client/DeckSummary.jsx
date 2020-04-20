@@ -16,9 +16,9 @@ class DeckSummary extends React.Component {
         };
     }
 
-    onCardMouseOver(event, id) {
+    onCardMouseOver(event, code) {
         var cardToDisplay = _.filter(this.props.cards, card => {
-            return id === card.id;
+            return code === card.code;
         });
 
         this.setState({ cardToShow: cardToDisplay[0] });
@@ -32,18 +32,20 @@ class DeckSummary extends React.Component {
         let cardsToRender = [];
         let groupedCards = {};
 
-        let combinedCards = _.union(this.props.deck.stronghold, this.props.deck.role, this.props.deck.provinceCards, this.props.deck.dynastyCards, this.props.deck.conflictCards);
+        let combinedCards = _.union(this.props.deck.objectiveCards, this.props.deck.mainDeckCards);
 
         _.each(combinedCards, (card) => {
             let type = card.card.type;
 
-            if(type === 'character') {
-                type = card.card.side + ' character';
-            }
             if(!groupedCards[type]) {
-                groupedCards[type] = [card];
+                groupedCards[type] = [JSON.parse(JSON.stringify(card))];
             } else {
-                groupedCards[type].push(card);
+                let foundCard = _.find(groupedCards[type], groupedCard => groupedCard.card.cardNumber === card.card.cardNumber);
+                if(foundCard) {
+                    foundCard.count++;
+                } else {
+                    groupedCards[type].push(JSON.parse(JSON.stringify(card)));
+                }
             }
         });
 
@@ -52,7 +54,7 @@ class DeckSummary extends React.Component {
             let count = 0;
 
             _.each(cardList, card => {
-                cards.push(<div key={ card.card.id }><span>{ card.count + 'x ' }</span><span className='card-link' onMouseOver={ event => this.onCardMouseOver(event, card.card.id) } onMouseOut={ this.onCardMouseOut }>{ card.card.name }</span></div>);
+                cards.push(<div key={ card.card.code }><span>{ card.count + 'x ' }</span><span className='card-link' onMouseOver={ event => this.onCardMouseOver(event, card.card.code) } onMouseOut={ this.onCardMouseOut }>{ card.card.name }</span></div>);
                 count += parseInt(card.count);
             });
 
@@ -72,23 +74,19 @@ class DeckSummary extends React.Component {
         }
 
         var cardsToRender = this.getCardsToRender();
-
         return (
             <div className='deck-summary col-xs-12'>
-                { this.state.cardToShow ? <img className='hover-image' src={ '/img/cards/' + this.state.cardToShow.id + '.jpg' } /> : null }
+                { this.state.cardToShow ? <img className='hover-image' src={ '/img/cards/' + this.state.cardToShow.code + '.png' } /> : null }
                 <div className='decklist'>
-                    <div className='col-xs-2 col-sm-3 no-x-padding'>{ this.props.deck.faction ? <img className='deck-mon img-responsive' src={ '/img/mons/' + this.props.deck.faction.value + '.png' } /> : null }</div>
-                    <div className='col-xs-8 col-sm-6'>
-                        <div className='info-row row'><span>Clan:</span>{ this.props.deck.faction ? <span className={ 'pull-right' }>{ this.props.deck.faction.name }</span> : null }</div>
-                        <div className='info-row row' ref='alliance'><span>Alliance:</span>{ this.props.deck.alliance && this.props.deck.alliance.name ? <span className='pull-right'>{ this.props.deck.alliance.name }</span> : <span> None </span> }</div>
-                        <div className='info-row row' ref='provinceCount'><span>Province deck:</span><span className='pull-right'>{ this.props.deck.status.provinceCount } cards</span></div>
-                        <div className='info-row row' ref='dynastyDrawCount'><span>Dynasty Deck:</span><span className='pull-right'>{ this.props.deck.status.dynastyCount } cards</span></div>
-                        <div className='info-row row' ref='conflictDrawCount'><span>Conflict Deck:</span><span className='pull-right'>{ this.props.deck.status.conflictCount } cards</span></div>
+                    <div className='col-xs-2 col-sm-3 no-x-padding'>{ this.props.deck.affiliation ? <img className='deck-mon img-responsive' src={ '/img/affiliations/' + this.props.deck.affiliation.value + '-crest.png' } /> : null }</div>
+                    <div className='col-xs-8 col-sm-8'>
+                        <div className='info-row row'><span>Affiliation:</span>{ this.props.deck.affiliation ? <span className={ 'pull-right' }>{ this.props.deck.affiliation.name }</span> : null }</div>
+                        <div className='info-row row' ref='objectiveCount'><span>Objective Deck:</span><span className='pull-right'>{ this.props.deck.status.objectiveCount } cards</span></div>
+                        <div className='info-row row' ref='mainDeckDrawCount'><span>Main Deck:</span><span className='pull-right'>{ this.props.deck.status.mainDeckCount } cards</span></div>
                         <div className='info-row row'><span>Validity:</span>
                             <DeckStatus className='pull-right' status={ this.props.deck.status } />
                         </div>
                     </div>
-                    <div className='col-xs-2 col-sm-3 no-x-padding'>{ this.props.deck.alliance && this.props.deck.alliance.value !== 'none' ? <img className='deck-alliance-mon img-responsive' src={ '/img/mons/' + this.props.deck.alliance.value + '.png' } /> : null }</div>
                 </div>
                 <div className='col-xs-12 no-x-padding'>
                     <div className='cards'>

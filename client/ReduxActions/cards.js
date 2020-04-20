@@ -10,22 +10,12 @@ export function loadCards() {
     };
 }
 
-export function loadPacks() {
+export function loadAffiliations() {
     return {
-        types: ['REQUEST_PACKS', 'RECEIVE_PACKS'],
+        types: ['REQUEST_AFFILIATIONS', 'RECEIVE_AFFILIATIONS'],
         shouldCallAPI: (state) => {
-            return !state.cards.packs;
+            return !state.cards.affiliations;
         },
-        callAPI: () => $.ajax('/api/packs', { cache: false })
-    };
-}
-
-export function loadFactions() {
-    return {
-        types: ['REQUEST_FACTIONS', 'RECEIVE_FACTIONS'],
-        shouldCallAPI: (state) => {
-            return !state.cards.factions;
-        },
-        callAPI: () => $.ajax('/api/factions', { cache: false })
+        callAPI: () => $.ajax('/api/affiliations', { cache: false })
     };
 }
