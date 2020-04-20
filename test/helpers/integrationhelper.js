@@ -133,8 +133,8 @@ global.integration = function(definitions) {
                 this[method] = (...args) => this.flow[method].apply(this.flow, args);
             });
 
-            this.buildDeck = function(faction, cards) {
-                return deckBuilder.buildDeck(faction, cards);
+            this.buildDeck = function(affiliation, cards) {
+                return deckBuilder.buildDeck(affiliation, cards);
             };
 
             /**

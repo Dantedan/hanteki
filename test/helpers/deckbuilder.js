@@ -6,7 +6,7 @@ const {matchCardByNameAndPack} = require('./cardutil.js');
 
 const PathToSubModulePacks = path.join(__dirname, '../../fiveringsdb-data/json/Card');
 
-const defaultFaction = 'phoenix';
+const defaultAffiliation = 'jedi';
 const defaultRole = 'seeker-of-water';
 const defaultStronghold = 'city-of-the-open-hand';
 const minProvince = 5;
@@ -20,7 +20,7 @@ class DeckBuilder {
     constructor() {
         this.cards = this.loadCards(PathToSubModulePacks);
         this.fillers = {
-            faction: defaultFaction,
+            affiliation: defaultAffiliation,
             role: defaultRole,
             stronghold: defaultStronghold,
             province: provinceFiller,
@@ -49,7 +49,7 @@ class DeckBuilder {
         options: as player1 and player2 are described in setupTest #1514
     */
     customDeck(player = {}) {
-        let faction = defaultFaction;
+        let affiliation = defaultAffiliation;
         let role = defaultRole;
         let stronghold = defaultStronghold;
         let provinceDeck = [];
@@ -59,8 +59,8 @@ class DeckBuilder {
         let dynastyDeckSize = dynastyBuffer; 
         let inPlayCards = []; // Considered separately, because may consist of both dynasty and conflict
 
-        if(player.faction) {
-            faction = player.faction;
+        if(player.affiliation) {
+            affiliation = player.affiliation;
         }
         if(player.role) {
             role = player.role;
@@ -153,10 +153,10 @@ class DeckBuilder {
             .concat(dynastyDeck).concat(inPlayCards)
             .concat(role).concat(stronghold);
 
-        return this.buildDeck(faction, deck);
+        return this.buildDeck(affiliation, deck);
     }
 
-    buildDeck(faction, cardLabels) {
+    buildDeck(affiliation, cardLabels) {
         var cardCounts = {};
         _.each(cardLabels, label => {
             var cardData = this.getCard(label);
@@ -171,12 +171,9 @@ class DeckBuilder {
         });
 
         return {
-            faction: { value: faction },
-            stronghold: _.filter(cardCounts, count => count.card.type === 'stronghold'),
-            role: _.filter(cardCounts, count => count.card.type === 'role'),
-            conflictCards: _.filter(cardCounts, count => count.card.side === 'conflict'),
-            dynastyCards: _.filter(cardCounts, count => count.card.side === 'dynasty'),
-            provinceCards: _.filter(cardCounts, count => count.card.type === 'province')
+            affiliation: { value: affiliation },
+            objectiveCards: _.filter(cardCounts, count => count.card.type === 'objective'),
+            mainDeckCards: _.filter(cardCounts, count => count.card.type !== 'objective')
         };
     }
 
