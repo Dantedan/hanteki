@@ -14,19 +14,15 @@ class Deck {
 
     prepare(player) {
         var result = {
-            faction: {},
-            conflictCards: [],
-            dynastyCards: [],
-            provinceCards: [],
-            stronghold: undefined,
-            role: undefined
+            affiliation: {},
+            objectiveCards: [],
+            mainDeckCards: []
         };
 
-        //faction
-        result.faction = this.data.faction;
+        //affiliation
+        result.affiliation = this.data.affiliation;
 
-        //conflict
-        this.eachRepeatedCard(this.data.conflictCards, cardData => {
+        this.eachRepeatedCard(this.data.objectiveCards, cardData => {
             if(cardData && ['conflict'].includes(cardData.side)) {
                 var conflictCard = this.createCard(DrawCard, player, cardData);
                 conflictCard.location = Locations.ConflictDeck;

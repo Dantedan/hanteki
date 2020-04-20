@@ -73,7 +73,7 @@ class GameObject {
         return this.printedType;
     }
 
-    getPrintedFaction() {
+    getPrintedAffiliation() {
         return null;
     }
 
@@ -89,7 +89,7 @@ class GameObject {
         return [];
     }
 
-    isFaction() {
+    isAffiliation() {
         return false;
     }
 

@@ -5,17 +5,11 @@ const logger = require('../log.js');
 class CardService {
     constructor(db) {
         this.cards = db.get('cards');
-        this.packs = db.get('packs');
     }
 
     replaceCards(cards) {
         return this.cards.remove({})
             .then(() => this.cards.insert(cards));
-    }
-
-    replacePacks(cards) {
-        return this.packs.remove({})
-            .then(() => this.packs.insert(cards));
     }
 
     getAllCards(options) {
@@ -24,23 +18,17 @@ class CardService {
                 let cards = {};
 
                 _.each(result, card => {
-                    if(options && options.shortForm) {
-                        cards[card.id] = _.pick(card, 'id', 'name', 'type', 'clan', 'side', 'deck_limit', 'element', 'unicity', 'influence_cost', 'influence_pool', 'pack_cards', 'role_restriction', 'allowed_clans');
-                    } else {
-                        cards[card.id] = card;
-                    }
+                    // if(options && options.shortForm) {
+                    //     cards[card.id] = _.pick(card, 'id', 'name', 'type', 'clan', 'side', 'deck_limit', 'element', 'unicity', 'influence_cost', 'influence_pool', 'pack_cards', 'role_restriction', 'allowed_clans');
+                    // } else {
+                        cards[card.code] = card;
+                    // }
                 });
 
                 return cards;
             }).catch(err => {
                 logger.info(err);
             });
-    }
-
-    getAllPacks() {
-        return this.packs.find({}).catch(err => {
-            logger.info(err);
-        });
     }
 }
 

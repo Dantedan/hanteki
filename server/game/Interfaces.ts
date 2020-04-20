@@ -176,7 +176,7 @@ export interface AttachmentConditionProps {
     limit?: number;
     myControl?: boolean;
     unique?: boolean;
-    faction?: string | string[];
+    affiliation?: string | string[];
     trait?: string | string[];
     limitTrait?: traitLimit | traitLimit[]
 };

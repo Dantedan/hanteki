@@ -34,7 +34,6 @@ const Ring = require('./ring.js');
 const Conflict = require('./conflict.js');
 const ConflictFlow = require('./gamesteps/conflict/conflictflow.js');
 const MenuCommands = require('./MenuCommands');
-const SpiritOfTheRiver = require('./cards/SpiritOfTheRiver');
 
 const { EffectNames, Phases, EventNames } = require('./Constants');
 
@@ -254,9 +253,9 @@ class Game extends EventEmitter {
     }
 
     createToken(card) {
-        let token = new SpiritOfTheRiver(card);
-        this.allCards.push(token);
-        return token;
+        // let token = new SpiritOfTheRiver(card);
+        // this.allCards.push(token);
+        // return token;
     }
 
     get actions() {
@@ -1149,7 +1148,7 @@ class Game extends EventEmitter {
         var players = this.getPlayers().map(player => {
             return {
                 name: player.name,
-                faction: player.faction.name || player.faction.value,
+                affiliation: player.affiliation.name || player.affiliation.value,
                 honor: player.getTotalHonor()
             };
         });
@@ -1234,7 +1233,7 @@ class Game extends EventEmitter {
             playerSummaries[player.name] = {
                 deck: deck,
                 emailHash: player.emailHash,
-                faction: player.faction.value,
+                affiliation: player.affiliation.value,
                 id: player.id,
                 lobbyId: player.lobbyId,
                 left: player.left,

@@ -16,26 +16,15 @@ module.exports.init = function(server) {
             });
     });
 
-    server.get('/api/packs', function(req, res, next) {
-        cardService.getAllPacks()
-            .then(packs => {
-                res.send({ success: true, packs: packs });
-            })
-            .catch(err => {
-                return next(err);
-            });
-    });
-
-    server.get('/api/factions', function(req, res) {
-        let factions = [
-            { name: 'Crab Clan', value: 'crab' },
-            { name: 'Crane Clan', value: 'crane' },
-            { name: 'Dragon Clan', value: 'dragon' },
-            { name: 'Lion Clan', value: 'lion' },
-            { name: 'Phoenix Clan', value: 'phoenix' },
-            { name: 'Scorpion Clan', value: 'scorpion' },
-            { name: 'Unicorn Clan', value: 'unicorn' }
+    server.get('/api/affiliations', function(req, res) {
+        let affiliations = [
+            { name: 'Jedi', value: 'jedi', side: 'light' },
+            { name: 'Rebel Alliance', value: 'rebel', side: 'light' },
+            { name: 'Smugglers and Spies', value: 'smugglers', side: 'light' },
+            { name: 'Sith', value: 'sith', side: 'dark' },
+            { name: 'Imperial Navy', value: 'imperial', side: 'dark' },
+            { name: 'Scum and Villainy', value: 'scum', side: 'dark' }
         ];
-        res.send({ success: true, factions: factions });
+        res.send({ success: true, affiliations: affiliations });
     });
 };

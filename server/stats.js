@@ -25,9 +25,7 @@ gameService.getAllGames(args[0], args[1]).then(games => {
     console.info('' + _.size(games), 'total games');
 
     let players = {};
-    let factions = {};
-    let alliances = {};
-    let factionAlliances = {};
+    let affiliations = {};
 
     _.each(games, game => {
         if(_.size(game.players) !== 2) {
@@ -47,33 +45,19 @@ gameService.getAllGames(args[0], args[1]).then(games => {
                 players[player.name] = { name: player.name, wins: 0, losses: 0 };
             }
 
-            if(!factions[player.faction]) {
-                factions[player.faction] = { name: player.faction, wins: 0, losses: 0 };
-            }
-
-            if(!alliances[player.alliance]) {
-                alliances[player.alliance] = { name: player.alliance, wins: 0, losses: 0 };
-            }
-
-            if(!factionAlliances[player.faction + player.agenda]) {
-                factionAlliances[player.faction + player.agenda] = { name: player.faction + ' / ' + player.agenda, wins: 0, losses: 0 };
+            if(!affiliations[player.affiliation]) {
+                affiliations[player.affiliation] = { name: player.affiliation, wins: 0, losses: 0 };
             }
 
             var playerStat = players[player.name];
-            var factionStat = factions[player.faction];
-            var allianceStat = alliances[player.alliance];
-            var factionAllianceStat = factionAlliances[player.faction + player.agenda];
+            var affiliationStat = affiliations[player.affiliation];
 
             if(player.name === game.winner) {
                 playerStat.wins++;
-                factionStat.wins++;
-                allianceStat.wins++;
-                factionAllianceStat.wins++;
+                affiliationStat.wins++;
             } else {
                 playerStat.losses++;
-                factionStat.losses++;
-                allianceStat.losses++;
-                factionAllianceStat.losses++;
+                affiliationStat.losses++;
             }
         });
     });
@@ -92,39 +76,19 @@ gameService.getAllGames(args[0], args[1]).then(games => {
         return -player.winRate;
     }).first(10).value();
 
-    // let factionWinners = _.sortBy(factions, faction => {
-    //     return -faction.wins;
+    // let affiliationWinners = _.sortBy(affiliations, affiliation => {
+    //     return -affiliation.wins;
     // });
 
-    let factionWinRates = _.map(factions, faction => {
-        let games = faction.wins + faction.losses;
+    let affiliationWinRates = _.map(affiliations, affiliation => {
+        let games = affiliation.wins + affiliation.losses;
 
-        return { name: faction.name, wins: faction.wins, losses: faction.losses, winRate: Math.round(((faction.wins / games) * 100)) };
+        return { name: affiliation.name, wins: affiliation.wins, losses: affiliation.losses, winRate: Math.round(((affiliation.wins / games) * 100)) };
     });
 
-    let allianceWinRates = _.map(alliances, faction => { // eslint-disable-line no-unused-vars
-        let games = alliances.wins + alliances.losses;
-
-        return { name: faction.name, wins: faction.wins, losses: faction.losses, winRate: Math.round(((faction.wins / games) * 100)) };
+    let affiliationWinRateStats = _.sortBy(affiliationWinRates, affiliation => {
+        return - affiliation.winRate;
     });
-
-    let factionWinRateStats = _.sortBy(factionWinRates, faction => {
-        return - faction.winRate;
-    });
-
-    let factionAllianceWinners = _.chain(factionAlliances).sortBy(faction => {
-        return -faction.wins;
-    }).first(10).value();
-
-    let factionAllianceWinRates = _.map(factionAllianceWinners, faction => {
-        let games = faction.wins + faction.losses;
-
-        return { name: faction.name, wins: faction.wins, losses: faction.losses, winRate: Math.round(((faction.wins / games) * 100)) };
-    });
-
-    let factionAllianceWinRateStats = _.chain(factionAllianceWinRates).sortBy(faction => {
-        return - faction.winRate;
-    }).first(10).value();
 
     console.info('### Top 10\n\nName | Number of wins\n----|----------------');
 
@@ -138,15 +102,9 @@ gameService.getAllGames(args[0], args[1]).then(games => {
         console.info(winner.name, ' | ', winner.wins, ' | ', winner.losses, ' | ', winner.winRate + '%');
     });
 
-    console.info('### Faction win rates\n\nFaction | Number of wins | Number of losses | Win Rate\n----|-------------|------------------|--------');
+    console.info('### Affiliation win rates\n\Affiliation | Number of wins | Number of losses | Win Rate\n----|-------------|------------------|--------');
 
-    _.each(factionWinRateStats, winner => {
-        console.info(winner.name, ' | ', winner.wins, ' | ', winner.losses, ' | ', winner.winRate + '%');
-    });
-
-    console.info('### Faction/Alliance combination win rates\n\nFaction/Alliance | Number of wins | Number of losses | Win Rate\n----|-------------|------------------|--------');
-
-    _.each(factionAllianceWinRateStats, winner => {
+    _.each(affiliationWinRateStats, winner => {
         console.info(winner.name, ' | ', winner.wins, ' | ', winner.losses, ' | ', winner.winRate + '%');
     });
 

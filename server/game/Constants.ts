@@ -27,10 +27,10 @@ export enum Decks {
 export enum EffectNames {
     AbilityRestrictions = 'abilityRestrictions',
     AddElementAsAttacker = 'addElementAsAttacker',
-    AddFaction = 'addFaction',
+    AddAffiliation = 'addAffiliation',
     AddKeyword = 'addKeyword',
     AddTrait = 'addTrait',
-    AttachmentFactionRestriction = 'attachmentFactionRestriction',
+    AttachmentAffiliationRestriction = 'attachmentAffiliationRestriction',
     AttachmentLimit = 'attachmentLimit',
     AttachmentMyControlOnly = 'attachmentMyControlOnly',
     AttachmentRestrictTraitAmount = 'attachmentRestrictTraitAmount',

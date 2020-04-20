@@ -7,7 +7,7 @@ const checkRestrictions = {
         context.player === effect.context.player.opponent && context.ability.isTriggeredAbility() && context.ability.abilityType !== AbilityTypes.ForcedReaction && context.ability.abilityType !== AbilityTypes.ForcedInterrupt,
     attachmentsWithSameClan: (context, effect, card) =>
         context.source.type === CardTypes.Attachment &&
-        context.source.getPrintedFaction() !== 'neutral' && card.isFaction(context.source.getPrintedFaction()),
+        context.source.getPrintedAffiliation() !== 'neutral' && card.isAffiliation(context.source.getPrintedAffiliation()),
     characters: context => context.source.type === CardTypes.Character,
     copiesOfDiscardEvents: context =>
         context.source.type === CardTypes.Event && context.player.conflictDiscardPile.any(card => card.name === context.source.name),
@@ -15,7 +15,7 @@ const checkRestrictions = {
     events: context => context.source.type === CardTypes.Event,
     eventsWithSameClan: (context, effect, card) =>
         context.source.type === CardTypes.Event &&
-        context.source.getPrintedFaction() !== 'neutral' && card.isFaction(context.source.getPrintedFaction()),
+        context.source.getPrintedAffiliation() !== 'neutral' && card.isAffiliation(context.source.getPrintedAffiliation()),
     nonSpellEvents: context => context.source.type === CardTypes.Event && !context.source.hasTrait('spell'),
     opponentsCardEffects: (context, effect) =>
         context.player === effect.context.player.opponent && (context.ability.isCardAbility() || !context.ability.isCardPlayed()) &&

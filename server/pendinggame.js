@@ -42,7 +42,7 @@ class PendingGame {
     getSaveState() {
         var players = _.map(this.getPlayers(), player => {
             return {
-                faction: player.faction.name,
+                affiliation: player.affiliation.name,
                 name: player.name
             };
         });
@@ -56,9 +56,9 @@ class PendingGame {
     }
 
     // Helpers
-    setupFaction(player, faction) {
-        player.faction = {};
-        player.faction = faction;
+    setupAffiliation(player, affiliation) {
+        player.affiliation = {};
+        player.affiliation = affiliation;
     }
 
     // Actions
@@ -241,7 +241,7 @@ class PendingGame {
         player.deck = deck;
         player.deck.selected = true;
 
-        this.setupFaction(player, deck.faction);
+        this.setupAffiliation(player, deck.affiliation);
     }
 
     // interrogators
@@ -283,7 +283,7 @@ class PendingGame {
                 agenda: this.started && player.agenda ? player.agenda.cardData.code : undefined,
                 deck: activePlayer ? deck : {},
                 emailHash: player.emailHash,
-                faction: this.started && player.faction ? player.faction.value : undefined,
+                affiliation: this.started && player.affiliation ? player.affiliation.value : undefined,
                 id: player.id,
                 left: player.left,
                 name: player.name,

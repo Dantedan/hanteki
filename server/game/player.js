@@ -45,7 +45,7 @@ class Player extends GameObject {
         this.additionalPiles = {};
         this.underneathStronghold = _([]);
 
-        this.faction = {};
+        this.affiliation = {};
         this.stronghold = null;
         this.role = null;
 
@@ -506,7 +506,7 @@ class Player extends GameObject {
     prepareDecks() {
         var deck = new Deck(this.deck);
         var preparedDeck = deck.prepare(this);
-        this.faction = preparedDeck.faction;
+        this.affiliation = preparedDeck.affiliation;
         this.provinceDeck = _(preparedDeck.provinceCards);
         if(preparedDeck.stronghold instanceof StrongholdCard) {
             this.stronghold = preparedDeck.stronghold;
@@ -1034,7 +1034,7 @@ class Player extends GameObject {
         if(deck.stronghold.length > 0) {
             this.stronghold = new StrongholdCard(this, deck.stronghold[0]);
         }
-        this.faction = deck.faction;
+        this.affiliation = deck.affiliation;
     }
 
     /**
@@ -1268,7 +1268,7 @@ class Player extends GameObject {
                 provinceDeck: this.getSummaryForCardList(this.provinceDeck, activePlayer, true)
             },
             disconnected: this.disconnected,
-            faction: this.faction,
+            affiliation: this.affiliation,
             firstPlayer: this.firstPlayer,
             hideProvinceDeck: this.hideProvinceDeck,
             id: this.id,

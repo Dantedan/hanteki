@@ -48,7 +48,7 @@ class BaseCard extends EffectSource {
     popupMenuText: string = '';
     abilities: any = { actions: [], reactions: [], persistentEffects: [], playActions: [] };
     traits: string[];
-    printedFaction: string;
+    printedAffiliation: string;
     location: Locations;
 
     isProvince: boolean = false;
@@ -66,7 +66,7 @@ class BaseCard extends EffectSource {
         this.printedName = cardData.name;
         this.printedType = cardData.type;
         this.traits = cardData.traits || [];
-        this.printedFaction = cardData.clan;
+        this.printedAffiliation = cardData.clan;
         this.attachments = _([]);
         this.childCards = [];
 
@@ -194,9 +194,9 @@ class BaseCard extends EffectSource {
         if(properties.unique) {
             effects.push(Effects.attachmentUniqueRestriction());
         }
-        if(properties.faction) {
-            const factions = Array.isArray(properties.faction) ? properties.faction : [properties.faction];
-            effects.push(Effects.attachmentFactionRestriction(factions));
+        if(properties.affiliation) {
+            const affiliations = Array.isArray(properties.affiliation) ? properties.affiliation : [properties.affiliation];
+            effects.push(Effects.attachmentAffiliationRestriction(affiliations));
         }
         if(properties.trait) {
             const traits = Array.isArray(properties.trait) ? properties.trait : [properties.trait];
@@ -232,12 +232,12 @@ class BaseCard extends EffectSource {
         return _.uniq(traits.concat(this.getEffects(EffectNames.AddTrait)));
     }
 
-    isFaction(faction: string): boolean {
-        faction = faction.toLowerCase();
-        if(faction === 'neutral') {
-            return this.printedFaction === faction && !this.anyEffect(EffectNames.AddFaction);
+    isAffiliation(affiliation: string): boolean {
+        affiliation = affiliation.toLowerCase();
+        if(affiliation === 'neutral') {
+            return this.printedAffiliation === affiliation && !this.anyEffect(EffectNames.AddAffiliation);
         }
-        return this.printedFaction === faction || this.getEffects(EffectNames.AddFaction).includes(faction);
+        return this.printedAffiliation === affiliation || this.getEffects(EffectNames.AddAffiliation).includes(affiliation);
     }
 
     isInProvince(): boolean {
@@ -399,7 +399,7 @@ class BaseCard extends EffectSource {
         return this.anyEffect(EffectNames.Blank) || this.anyEffect(EffectNames.CopyCharacter);
     }
 
-    getPrintedFaction(): string {
+    getPrintedAffiliation(): string {
         return this.cardData.clan;
     }
 
@@ -607,7 +607,7 @@ class BaseCard extends EffectSource {
 
     /**
      * Checks whether the passed card meets the attachment restrictions (e.g.
-     * Opponent cards only, specific factions, etc) for this card.
+     * Opponent cards only, specific affiliations, etc) for this card.
      */
     canAttach(parent, context, ignoreType = false) {
         if(!parent || parent.getType() !== CardTypes.Character || !ignoreType && this.getType() !== CardTypes.Attachment) {
@@ -617,7 +617,7 @@ class BaseCard extends EffectSource {
             return false;
         } else if(this.anyEffect(EffectNames.AttachmentUniqueRestriction) && !parent.isUnique()) {
             return false;
-        } else if(this.getEffects(EffectNames.AttachmentFactionRestriction).some(factions => !factions.some(faction => parent.isFaction(faction)))) {
+        } else if(this.getEffects(EffectNames.AttachmentAffiliationRestriction).some(affiliations => !affiliations.some(affiliation => parent.isAffiliation(affiliation)))) {
             return false;
         } else if(this.getEffects(EffectNames.AttachmentTraitRestriction).some(traits => !traits.some(trait => parent.hasTrait(trait)))) {
             return false;

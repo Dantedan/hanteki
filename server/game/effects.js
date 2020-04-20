@@ -17,10 +17,10 @@ const { EffectNames, PlayTypes, CardTypes } = require('./Constants');
 const Effects = {
     // Card effects
     addElementAsAttacker: (element) => EffectBuilder.card.flexible(EffectNames.AddElementAsAttacker, element),
-    addFaction: (faction) => EffectBuilder.card.static(EffectNames.AddFaction, faction),
+    addAffiliation: (affiliation) => EffectBuilder.card.static(EffectNames.AddAffiliation, affiliation),
     addKeyword: (keyword) => EffectBuilder.card.static(EffectNames.AddKeyword, keyword),
     addTrait: (trait) => EffectBuilder.card.static(EffectNames.AddTrait, trait),
-    attachmentFactionRestriction: (factions) => EffectBuilder.card.static(EffectNames.AttachmentFactionRestriction, factions),
+    attachmentAffiliationRestriction: (affiliations) => EffectBuilder.card.static(EffectNames.AttachmentAffiliationRestriction, affiliations),
     attachmentLimit: (amount) => EffectBuilder.card.static(EffectNames.AttachmentLimit, amount),
     attachmentMyControlOnly: () => EffectBuilder.card.static(EffectNames.AttachmentMyControlOnly),
     attachmentRestrictTraitAmount: (object) => EffectBuilder.card.static(EffectNames.AttachmentRestrictTraitAmount, object),
