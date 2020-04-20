@@ -27,8 +27,6 @@ class InnerDeckEditor extends React.Component {
                 cardToAdd: ''
             }
         };
-
-        console.log(props.deck);
     }
 
     componentWillMount() {
@@ -133,8 +131,6 @@ class InnerDeckEditor extends React.Component {
             let packOffset = line.indexOf('(');
             let cardName = line.substr(index, packOffset === -1 ? line.length : packOffset - index - 1);
 
-            console.log(cardName);
-
             let card = _.find(this.props.cards, function(card) {
                 return card.type === 'objective' && card.name.toLowerCase() === cardName.toLowerCase();
             });
@@ -154,8 +150,9 @@ class InnerDeckEditor extends React.Component {
         let objectives = deck.objectiveCards;
         let mainDeck = deck.mainDeckCards;
 
-        if(objectives[objectiveCard.code]) {
-            objectives[objectiveCard.code].count += number;
+        let deckObjective = _.find(objectives, objective => objective.card.code === objectiveCard.code);
+        if(deckObjective) {
+            deckObjective.count += number;
         } else {
             objectives.push({ count: number, card: objectiveCard });
         }
@@ -165,8 +162,9 @@ class InnerDeckEditor extends React.Component {
           });
 
         _.each(mainDeckCards, function(card) {
-            if(mainDeck[card.code]) {
-                mainDeck[card.code].count += number;
+            let mainDeckCard = _.find(mainDeck, mainDeckCard => mainDeckCard.card.code === card.code);
+            if(mainDeckCard) {
+                mainDeckCard.count += number;
             } else {
                 mainDeck.push({ count: number, card: card });
             }

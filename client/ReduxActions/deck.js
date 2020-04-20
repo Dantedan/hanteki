@@ -57,7 +57,6 @@ export function deleteDeck(deck) {
 }
 
 export function saveDeck(deck) {
-    console.log(deck);
     let str = JSON.stringify({
         deckName: deck.name,
         affiliation: { name: deck.affiliation.name, value: deck.affiliation.value },

@@ -1,16 +1,6 @@
 const bannedList = {
-    version: '12',
-    cards: [
-        'guest-of-honor',
-        'charge',
-        'isawa-tadaka',
-        'karada-district',
-        'master-of-gisei-toshi',
-        'kanjo-district',
-        'jurojin-s-curse',
-        'hidden-moon-dojo',
-        'mirumoto-daisho'
-    ]
+    version: '1',
+    cards: []
 };
 
 class BannedList {

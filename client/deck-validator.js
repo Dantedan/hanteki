@@ -5,26 +5,6 @@ const moment = require('moment');
 const RestrictedList = require('./RestrictedList');
 const BannedList = require('./BannedList');
 
-const openRoles = [
-    'keeper-of-air',
-    'keeper-of-earth',
-    'keeper-of-fire',
-    'keeper-of-water',
-    'keeper-of-void',
-    'seeker-of-air',
-    'seeker-of-earth',
-    'seeker-of-fire',
-    'seeker-of-water',
-    'seeker-of-void',
-    'support-of-the-crane',
-    'support-of-the-phoenix',
-    'support-of-the-scorpion',
-    'support-of-the-unicorn',
-    'support-of-the-lion',
-    'support-of-the-crab',
-    'support-of-the-dragon'
-];
-
 function getDeckCount(deck) {
     let count = 0;
 
@@ -33,51 +13,6 @@ function getDeckCount(deck) {
     });
 
     return count;
-}
-
-function isCardInReleasedPack(packs, card) {
-    let packsWithCard = _.compact(_.map(card.pack_cards, pack => _.find(packs, p => p.id === pack.pack.id)));
-
-    if(packsWithCard.length === 0) {
-        return false;
-    }
-
-    let releaseDates = _.compact(_.map(packsWithCard, pack => pack.available || pack.released_at));
-
-    if(releaseDates.length === 0) {
-        return false;
-    }
-
-    let now = moment();
-
-    return _.any(releaseDates, date => moment(date, 'YYYY-MM-DD') <= now);
-}
-
-function rulesForKeeperRole(element) {
-    return {
-        influence: 3,
-        roleRestrictions: ['keeper', element]
-    };
-}
-
-function rulesForSeekerRole(element) {
-    return {
-        maxProvince: {[element]: 1},
-        roleRestrictions: ['seeker', element]
-    };
-}
-
-function rulesForSupportRole(affiliation) {
-    return {
-        influence: 8,
-        roleRestrictions: ['support'],
-        rules: [
-            {
-                message: 'Support roles can only be used with the match alliance clan',
-                condition: deck => deck.alliance.value === affiliation
-            }
-        ]
-    };
 }
 
 /**
@@ -90,25 +25,6 @@ function rulesForSupportRole(affiliation) {
  * cannotInclude - function that takes a card and return true if it is not allowed in the overall deck.
  * rules         - an array of objects containing a `condition` function that takes a deck and return true if the deck is valid for that rule, and a `message` used for errors when invalid.
  */
-const roleRules = {
-    'keeper-of-air': rulesForKeeperRole('air'),
-    'keeper-of-earth': rulesForKeeperRole('earth'),
-    'keeper-of-fire': rulesForKeeperRole('fire'),
-    'keeper-of-void': rulesForKeeperRole('void'),
-    'keeper-of-water': rulesForKeeperRole('water'),
-    'seeker-of-air': rulesForSeekerRole('air'),
-    'seeker-of-earth': rulesForSeekerRole('earth'),
-    'seeker-of-fire': rulesForSeekerRole('fire'),
-    'seeker-of-void': rulesForSeekerRole('void'),
-    'seeker-of-water': rulesForSeekerRole('water'),
-    'support-of-the-crane': rulesForSupportRole('crane'),
-    'support-of-the-phoenix': rulesForSupportRole('phoenix'),
-    'support-of-the-scorpion': rulesForSupportRole('scorpion'),
-    'support-of-the-unicorn': rulesForSupportRole('unicorn'),
-    'support-of-the-lion': rulesForSupportRole('lion'),
-    'support-of-the-crab': rulesForSupportRole('crab'),
-    'support-of-the-dragon': rulesForSupportRole('dragon')
-};
 
 class DeckValidator {
     constructor(packs) {
@@ -119,13 +35,11 @@ class DeckValidator {
 
     validateDeck(deck) {
         let errors = [];
-        let unreleasedCards = [];
         let rules = this.getRules(deck);
         let objectiveCount = getDeckCount(deck.objectiveCards);
-        let mainDeckCount = getDeckCount(deck.mainDeckCards);
 
-        if(objectiveCount < rules.requiredObjectives) {
-            errors.push('Too few objectives cards');
+        if(objectiveCount < rules.minimumObjective) {
+            errors.push('A deck requires a minimum of 10 objectives');
         }
 
         _.each(rules.rules, rule => {
@@ -134,57 +48,32 @@ class DeckValidator {
             }
         });
 
-        let allCards = deck.objectiveCards.concat(deck.objectiveCards).concat(deck.mainDeckCards);
-        let cardCountByName = {};
+        let objectiveCards = deck.objectiveCards;
 
-        _.each(allCards, cardQuantity => {
-            cardCountByName[cardQuantity.card.name] = cardCountByName[cardQuantity.card.name] || { name: cardQuantity.card.name, affiliation: cardQuantity.card.clan, influence: cardQuantity.card.influence_cost, limit: cardQuantity.card.deck_limit, count: 0, allowed_clans: cardQuantity.card.allowed_clans };
-            cardCountByName[cardQuantity.card.name].count += cardQuantity.count;
+        _.each(objectiveCards, objectiveCard => {
 
-            if(!rules.mayInclude(cardQuantity.card) || rules.cannotInclude(cardQuantity.card) || (cardQuantity.card.role_restriction && !rules.roleRestrictions.includes(cardQuantity.card.role_restriction))) {
-                errors.push(cardQuantity.card.name + ' is not allowed by clan, alliance or role');
+            if(objectiveCard.card.limit1PerObjectiveDeck && objectiveCard.count > 1) {
+                errors.push(objectiveCard.card.name + ' is limited to 1 per objective deck');
             }
 
-            if(!isCardInReleasedPack(this.packs, cardQuantity.card)) {
-                unreleasedCards.push(cardQuantity.card.name + ' is not yet released');
+            if(objectiveCard.count > 2) {
+                errors.push('limit 2 objective copies per deck');
             }
-        });
 
-        _.each(rules.maxProvince, (amount, element) => {
-            let provinces = _.filter(deck.provinceCards, card => card.card.element === element);
-            if(provinces.length > amount) {
-                errors.push('Too many provinces with ' + element + ' element');
+            if(objectiveCard.card.loyalAffiliationOnly && deck.affiliation.value !== objectiveCard.card.affiliation) {
+                errors.push(objectiveCard.card.name + ' is ' + objectiveCard.card.affiliation + ' affiliation only');
             }
         });
 
-        _.each(cardCountByName, card => {
-            if(card.count > card.limit) {
-                errors.push(card.name + ' has limit ' + card.limit);
-            }
-        });
-
-        let totalInfluence = _.reduce(cardCountByName, (total, card) => {
-            if(card.influence && card.affiliation !== deck.affiliation.value) {
-                return total + card.influence * card.count;
-            }
-            return total;
-        }, 0);
-
-        if(totalInfluence > rules.influence) {
-            errors.push('Total influence (' + totalInfluence.toString() + ') is higher than max allowed influence (' + rules.influence.toString() + ')');
-        }
-
-        let restrictedResult = this.restrictedList.validate(allCards.map(cardQuantity => cardQuantity.card));
-        let bannedResult = this.bannedList.validate(allCards.map(cardQuantity => cardQuantity.card));
+        let restrictedResult = this.restrictedList.validate(objectiveCards.map(cardQuantity => cardQuantity.card));
+        let bannedResult = this.bannedList.validate(objectiveCards.map(cardQuantity => cardQuantity.card));
 
         return {
             basicRules: errors.length === 0,
-            noUnreleasedCards: unreleasedCards.length === 0,
             faqRestrictedList: restrictedResult.valid && bannedResult.valid,
             faqVersion: restrictedResult.version,
             objectiveCount: objectiveCount,
-            mainDeckCount: mainDeckCount,
-            extendedStatus: errors.concat(unreleasedCards, restrictedResult.errors, bannedResult.errors)
+            extendedStatus: errors.concat(restrictedResult.errors, bannedResult.errors)
         };
     }
 
@@ -193,6 +82,7 @@ class DeckValidator {
             minimumObjective: 10,
         };
         let affiliationRules = this.getAffiliationRules(deck.affiliation.value.toLowerCase());
+
         return this.combineValidationRules([standardRules, affiliationRules]);
     }
 
@@ -202,48 +92,14 @@ class DeckValidator {
         };
     }
 
-    getStrongholdRules(stronghold) {
-        if(!stronghold) {
-            return {};
-        }
-        return {
-            influence: stronghold.influence_pool,
-            rules: [
-                {
-                    message: 'Your stronghold must match your clan',
-                    condition: deck => stronghold.clan === deck.affiliation.value
-                }
-            ]
-
-        };
-    }
-
-    getRoleRules(role) {
-        if(!role || !roleRules[role.id]) {
-            return {};
-        }
-        return roleRules[role.id];
-    }
-
     combineValidationRules(validators) {
         let mayIncludeFuncs = _.compact(_.pluck(validators, 'mayInclude'));
         let cannotIncludeFuncs = _.compact(_.pluck(validators, 'cannotInclude'));
         let combinedRules = _.reduce(validators, (rules, validator) => rules.concat(validator.rules || []), []);
-        let combinedRoles = _.reduce(validators, (roles, validator) => roles.concat(validator.roleRestrictions || []), []);
-        let totalInfluence = _.reduce(validators, (total, validator) => total + validator.influence || 0, 0);
-        let maxProvince = _.reduce(validators, (result, validator) => {
-            if(validator.maxProvince) {
-                _.each(result, (amount, element) => result[element] = amount + (validator.maxProvince[element] || 0));
-            }
-            return result;
-        }, { air: 0, earth: 0, fire: 0, void: 0, water: 0 });
         let combined = {
             mayInclude: card => _.any(mayIncludeFuncs, func => func(card)),
             cannotInclude: card => _.any(cannotIncludeFuncs, func => func(card)),
-            rules: combinedRules,
-            roleRestrictions: combinedRoles,
-            influence: totalInfluence,
-            maxProvince: maxProvince
+            rules: combinedRules
         };
         return _.extend({}, ...validators, combined);
     }
@@ -261,351 +117,3 @@ module.exports = function validateDeck(deck, options) {
 
     return result;
 };
-/*
-module.exports = function validateDeck(deck, packs) { // eslint-disable-line no-unused-vars
-    var provinceCount = getDeckCount(deck.provinceCards);
-    var conflictCount = getDeckCount(deck.conflictCards);
-    var dynastyCount = getDeckCount(deck.dynastyCards);
-    var status = 'Valid';
-    var requiredProvinces = 5;
-    var stronghold = getStronghold(deck.stronghold);
-    var influenceTotal = 0;
-    var extendedStatus = [];
-    var minDraw = 40;
-    var maxDraw = 45;
-    var airCount = 0;
-    var earthCount = 0;
-    var fireCount = 0;
-    var voidCount = 0;
-    var waterCount = 0;
-    let provinceMax = {
-        air: 1,
-        earth: 1,
-        fire: 1,
-        void: 1,
-        water: 1
-    };
-    let roleType = undefined;
-    let roleElement = undefined;
-    var isValid = true;
-
-    if(_.any(deck.stronghold, card => {
-        return !card.card.clan;
-    })) {
-        status = 'Invalid';
-        extendedStatus.push('Deck contains invalid cards');
-
-        return { status: status, provinceCount: provinceCount, conflictCount: conflictCount, dynastyCount: dynastyCount, extendedStatus: extendedStatus };
-    }
-    var combined = _.union(deck.provinceCards, deck.stronghold, deck.conflictCards, deck.dynastyCards);
-
-    var combinedClan = _.union(deck.provinceCards, deck.stronghold, deck.dynastyCards);
-
-    if(conflictCount < minDraw) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('Too few conflict cards');
-    }
-
-    if(dynastyCount < minDraw) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('Too few dynasty cards');
-    }
-
-    if(conflictCount > maxDraw) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('Too many conflict cards');
-    }
-
-    if(dynastyCount > maxDraw) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('Too many dynasty cards');
-    }
-
-    if(provinceCount < requiredProvinces) {
-        status = 'Invalid';
-        isValid = false;
-        extendedStatus.push('Too few province cards');
-    }
-
-    if(provinceCount > requiredProvinces) {
-        extendedStatus.push('Too many provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    //Ensure one province of each element
-    _.each(deck.provinceCards, card => {
-        if(card.card.element === 'air') {
-            airCount++;
-        } else if(card.card.element === 'earth') {
-            earthCount++;
-        } else if(card.card.element === 'fire') {
-            fireCount++;
-        } else if(card.card.element === 'water') {
-            waterCount++;
-        } else if(card.card.element === 'void') {
-            voidCount++;
-        }
-    });
-
-    if(deck.role && deck.role['0'] && deck.role['0'].card) {
-        let roleIdArray = deck.role['0'].card.id.split('-');
-        roleType = roleIdArray[0];
-        roleElement = roleIdArray[2];
-
-        if(roleType === 'seeker') {
-            provinceMax[roleElement] = 2;
-        }
-    }
-
-    if(airCount > provinceMax['air']) {
-        extendedStatus.push('Too many air provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(earthCount > provinceMax['earth']) {
-        extendedStatus.push('Too many earth provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(fireCount > provinceMax['fire']) {
-        extendedStatus.push('Too many fire provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(voidCount > provinceMax['void']) {
-        extendedStatus.push('Too many void provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(waterCount > provinceMax['water']) {
-        extendedStatus.push('Too many water provinces');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(_.any(combined, card => {
-        if(card.count > card.card.deck_limit) {
-            extendedStatus.push(card.card.name + ' has limit ' + card.card.deck_limit);
-
-            return true;
-        }
-
-        return false;
-    })) {
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    //Check for out of affiliation cards in stronghold, provinces, dynasty
-    if(_.any(combinedClan, card => {
-        if(!(_.contains([deck.affiliation.value,'neutral'],card.card.clan))) {
-            extendedStatus.push(card.card.name + ' is not in affiliation ' + deck.affiliation.value);
-            //console.log(card.card.label + ' has clan ' + card.card.clan);
-            return true;
-        }
-
-        return false;
-    })) {
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    //Check for out of affiliation cards in conflict
-    if(_.any(deck.conflictCards, card => {
-        if(!(_.contains([deck.affiliation.value, deck.alliance.value, 'neutral'],card.card.clan))) {
-            extendedStatus.push(card.card.name + ' is not in affiliation ' + deck.affiliation.value);
-            return true;
-        }
-
-        return false;
-    })) {
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(stronghold) {
-        let influenceMax = stronghold.card.influence_pool;
-
-        if(roleType === 'keeper') {
-            influenceMax = influenceMax + 3;
-        }
-        //Total up influence count
-        _.each(deck.conflictCards, card => {
-            if(card.card.clan === deck.alliance.value) {
-                influenceTotal = influenceTotal + (card.card.influence_cost * card.count);
-            }
-        });
-
-        if(influenceTotal > influenceMax) {
-            extendedStatus.push('Not enough influence');
-            status = 'Invalid';
-            isValid = false;
-        }
-    } else {
-        extendedStatus.push('No stronghold chosen');
-        status = 'Invalid';
-        isValid = false;
-    }
-
-    if(isValid) {
-        let unreleasedCards = _.reject(combined, card => {
-            return isCardInReleasedPack(packs, card.card);
-        });
-
-        if(_.size(unreleasedCards) !== 0) {
-            status = 'Unreleased Cards';
-
-            _.each(unreleasedCards, card => {
-                extendedStatus.push(card.card.name + ' is not yet released');
-            });
-        }
-
-    }
-
-    return { status: status, provinceCount: provinceCount, conflictCount: conflictCount, dynastyCount: dynastyCount, extendedStatus: extendedStatus, isValid: isValid };
-};
-
-
-/*
-module.exports = function validateDeckNew(deck, packs) { // eslint-disable-line no-unused-vars
-    let provinceCount = getDeckCount(deck.provinceCards);
-    let conflictCount = getDeckCount(deck.conflictCards);
-    let dynastyCount = getDeckCount(deck.dynastyCards);
-    let status = 'Valid';
-    let extendedStatus = [];
-    let isValid = true;
-
-    let deckList = {};
-
-    let apiUrl = 'https://api.fiveringsdb.com/';
-    let path = 'deck-validation';
-    let format = 'standard';
-
-    let combined = _.union(deck.stronghold, deck.role, deck.provinceCards, deck.conflictCards, deck.dynastyCards);
-
-    _.each(combined, card => {
-        deckList[card.card.id] = card.count;
-    });
-
-    let JSONDeckList = JSON.stringify(deckList);
-
-    let response = {};
-
-
-    $.ajax({
-        type: 'POST',
-        url: apiUrl + path + '/' + format,
-        data: JSONDeckList,
-        dataType: 'json',
-        async: false,
-        success: function(data) {
-            response = data;
-        }
-    });
-
-    if(response.success) {
-        let responseStatus = parseInt(response.status);
-        switch(responseStatus) {
-            case 0:
-                extendedStatus.push('Deck is valid');
-                break;
-            case 1:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many copies of one or more cards');
-                break;
-            case 2:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too few Strongholds');
-                break;
-            case 3:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Strongholds');
-                break;
-            case 4:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Roles');
-                break;
-            case 5:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too few Dynasty cards');
-                break;
-            case 6:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Dynasty cards');
-                break;
-            case 7:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has off-clan Dynasty cards');
-                break;
-            case 8:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too few Conflict cards');
-                break;
-            case 9:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Conflict cards');
-                break;
-            case 10:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck does not have enough influence for its off-clan Conflict cards');
-                break;
-            case 11:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has more than one off-clan in its Conflict deck');
-                break;
-            case 12:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Character cards in its Conflict deck');
-                break;
-            case 13:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too few Provinces');
-                break;
-            case 14:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Provinces');
-                break;
-            case 15:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has too many Provinces of one Element');
-                break;
-            case 16:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has an off-clan Province');
-                break;
-            case 17:
-                status = 'Invalid';
-                isValid = false;
-                extendedStatus.push('Deck has an off-clan Conflict card with no influence cost');
-                break;
-        }
-    }
-
-    return { status: status, provinceCount: provinceCount, conflictCount: conflictCount, dynastyCount: dynastyCount, extendedStatus: extendedStatus, isValid: isValid };
-};
-*/

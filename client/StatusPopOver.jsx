@@ -21,7 +21,6 @@ class StatusPopOver extends React.Component {
     }
 
     updateProps(props) {
-        return;
         let popovers = $('[data-toggle="popover"]');
 
         if(!popovers || !popovers.popover) {

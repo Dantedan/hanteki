@@ -42,7 +42,7 @@ class DeckSummary extends React.Component {
             } else {
                 let foundCard = _.find(groupedCards[type], groupedCard => groupedCard.card.cardNumber === card.card.cardNumber);
                 if(foundCard) {
-                    foundCard.count++;
+                    foundCard.count += card.count;
                 } else {
                     groupedCards[type].push(JSON.parse(JSON.stringify(card)));
                 }
