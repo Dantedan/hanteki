@@ -510,9 +510,9 @@ class Lobby {
             return;
         }
 
-        Promise.all([this.cardService.getAllCards(), this.cardService.getAllPacks(), this.deckService.getById(deckId)])
+        Promise.all([this.cardService.getAllCards(), this.deckService.getById(deckId)])
             .then(results => {
-                let [cards, packs, deck] = results;
+                let [cards, deck] = results;
 
                 _.each(deck.stronghold, stronghold => {
                     stronghold.card = cards[stronghold.card.id];
@@ -534,7 +534,7 @@ class Lobby {
                     dynasty.card = cards[dynasty.card.id];
                 });
 
-                deck.status = validateDeck(deck, { packs: packs, includeExtendedStatus: false });
+                deck.status = validateDeck(deck, { includeExtendedStatus: false });
                 game.selectDeck(socket.user.username, deck);
 
                 this.sendGameState(game);
