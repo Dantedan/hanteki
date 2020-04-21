@@ -124,7 +124,7 @@
     "style-loader": "^0.18.2",
     "url-loader": "^0.5.9",
     "webpack-dev-middleware": "^1.12.0",
-    "webpack-dev-server": "^2.9.0",
+    "webpack-dev-server": "^3.10.3",
     "webpack-hot-middleware": "^2.19.1"
   }
 }
