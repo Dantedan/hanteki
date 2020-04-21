@@ -24,7 +24,7 @@ function processDecks(decks, state) {
             return { count: card.count, card: state.cards[card.card.code] };
         });
 
-        deck.mainDeckCards = _.map(deck.mainDeckCards, card => {
+        deck.commandDeckCards = _.map(deck.commandDeckCards, card => {
             return { count: card.count, card: state.cards[card.card.code] };
         });
 

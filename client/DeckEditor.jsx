@@ -40,12 +40,8 @@ class InnerDeckEditor extends React.Component {
         }
         let cardList = '';
 
-        if(this.props.deck && (this.props.deck.objectiveCards || this.props.deck.mainDeckCards)) {
+        if(this.props.deck && (this.props.deck.objectiveCards || this.props.deck.commandDeckCards)) {
             _.each(this.props.deck.objectiveCards, card => {
-                cardList += this.getCardListEntry(card.count, card.card);
-            });
-
-            _.each(this.props.deck.mainDeckCards, card => {
                 cardList += this.getCardListEntry(card.count, card.card);
             });
 
@@ -63,7 +59,7 @@ class InnerDeckEditor extends React.Component {
             _id: deck._id,
             name: deck.name,
             objectiveCards: deck.objectiveCards,
-            mainDeckCards: deck.mainDeckCards,
+            commandDeckCards: deck.commandDeckCards,
             affiliation: deck.affiliation,
             status: deck.status
         };
@@ -113,7 +109,7 @@ class InnerDeckEditor extends React.Component {
         let split = event.target.value.split('\n');
 
         deck.objectiveCards = [];
-        deck.mainDeckCards = [];
+        deck.commandDeckCards = [];
 
         _.each(split, line => {
             line = line.trim();
@@ -148,7 +144,7 @@ class InnerDeckEditor extends React.Component {
     addObjective(objectiveCard, number) {
         let deck = this.copyDeck(this.state.deck);
         let objectives = deck.objectiveCards;
-        let mainDeck = deck.mainDeckCards;
+        let commandDeck = deck.commandDeckCards;
 
         let deckObjective = _.find(objectives, objective => objective.card.code === objectiveCard.code);
         if(deckObjective) {
@@ -157,16 +153,16 @@ class InnerDeckEditor extends React.Component {
             objectives.push({ count: number, card: objectiveCard });
         }
         
-        let mainDeckCards = _.pick(this.props.cards, function(card) {
+        let commandDeckCards = _.pick(this.props.cards, function(card) {
             return card.objectiveSetNumber === objectiveCard.objectiveSetNumber && card.type !== 'objective';
           });
 
-        _.each(mainDeckCards, function(card) {
-            let mainDeckCard = _.find(mainDeck, mainDeckCard => mainDeckCard.card.code === card.code);
-            if(mainDeckCard) {
-                mainDeckCard.count += number;
+        _.each(commandDeckCards, function(card) {
+            let commandDeckCard = _.find(commandDeck, commandDeckCard => commandDeckCard.card.code === card.code);
+            if(commandDeckCard) {
+                commandDeckCard.count += number;
             } else {
-                mainDeck.push({ count: number, card: card });
+                commandDeck.push({ count: number, card: card });
             }
         })
     }
@@ -306,14 +302,14 @@ class InnerDeckEditor extends React.Component {
     //             if(card) {
     //                 //Duplicate addCard as well
     //                 let objectives = deck.objectiveCards;
-    //                 let mainDeck = deck.mainDeckCards;
+    //                 let commandDeck = deck.commandDeckCards;
 
     //                 let list;
 
     //                 if(card.type === 'objective') {
     //                     list = objectives;
     //                 } else {
-    //                     list = mainDeck;
+    //                     list = commandDeck;
     //                 }
 
     //                 if(list[card.id]) {

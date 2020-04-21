@@ -63,6 +63,11 @@ class DeckValidator {
             if(objectiveCard.card.loyalAffiliationOnly && deck.affiliation.value !== objectiveCard.card.affiliation) {
                 errors.push(objectiveCard.card.name + ' is ' + objectiveCard.card.affiliation + ' affiliation only');
             }
+
+            console.log(objectiveCard, deck.affiliation);
+            if(objectiveCard.card.side !== deck.affiliation.side) {
+                errors.push(objectiveCard.card.name + ' is in the wrong side of the force... for now.');
+            }
         });
 
         let restrictedResult = this.restrictedList.validate(objectiveCards.map(cardQuantity => cardQuantity.card));

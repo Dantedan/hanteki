@@ -18,12 +18,12 @@ module.exports.init = function(server) {
 
     server.get('/api/affiliations', function(req, res) {
         let affiliations = [
-            { name: 'Jedi', value: 'jedi', side: 'light' },
-            { name: 'Rebel Alliance', value: 'rebel', side: 'light' },
-            { name: 'Smugglers and Spies', value: 'smugglers', side: 'light' },
-            { name: 'Sith', value: 'sith', side: 'dark' },
-            { name: 'Imperial Navy', value: 'imperial', side: 'dark' },
-            { name: 'Scum and Villainy', value: 'scum', side: 'dark' }
+            { name: 'Jedi', value: 'jedi', side: 'Light' },
+            { name: 'Rebel Alliance', value: 'rebel', side: 'Light' },
+            { name: 'Smugglers and Spies', value: 'smugglers', side: 'Light' },
+            { name: 'Sith', value: 'sith', side: 'Dark' },
+            { name: 'Imperial Navy', value: 'imperial', side: 'Dark' },
+            { name: 'Scum and Villainy', value: 'scum', side: 'Dark' }
         ];
         res.send({ success: true, affiliations: affiliations });
     });

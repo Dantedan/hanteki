@@ -59,9 +59,9 @@ export function deleteDeck(deck) {
 export function saveDeck(deck) {
     let str = JSON.stringify({
         deckName: deck.name,
-        affiliation: { name: deck.affiliation.name, value: deck.affiliation.value },
+        affiliation: { name: deck.affiliation.name, value: deck.affiliation.value, side: deck.affiliation.side },
         objectiveCards: formatCards(deck.objectiveCards),
-        mainDeckCards: formatCards(deck.mainDeckCards),
+        commandDeckCards: formatCards(deck.commandDeckCards),
     });
 
     return {

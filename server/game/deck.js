@@ -16,7 +16,7 @@ class Deck {
         var result = {
             affiliation: {},
             objectiveCards: [],
-            mainDeckCards: []
+            commandDeckCards: []
         };
 
         //affiliation

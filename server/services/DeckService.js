@@ -22,7 +22,7 @@ class DeckService {
             username: deck.username,
             name: deck.deckName,
             objectiveCards: deck.objectiveCards,
-            mainDeckCards: deck.mainDeckCards,
+            commandDeckCards: deck.commandDeckCards,
             affiliation: deck.affiliation,
             lastUpdated: new Date()
         };
@@ -34,7 +34,7 @@ class DeckService {
         let properties = {
             name: deck.deckName,
             objectiveCards: deck.objectiveCards,
-            mainDeckCards: deck.mainDeckCards,
+            commandDeckCards: deck.commandDeckCards,
             affiliation: deck.affiliation,
             lastUpdated: new Date()
         };

@@ -173,7 +173,7 @@ class DeckBuilder {
         return {
             affiliation: { value: affiliation },
             objectiveCards: _.filter(cardCounts, count => count.card.type === 'objective'),
-            mainDeckCards: _.filter(cardCounts, count => count.card.type !== 'objective')
+            commandDeckCards: _.filter(cardCounts, count => count.card.type !== 'objective')
         };
     }
 

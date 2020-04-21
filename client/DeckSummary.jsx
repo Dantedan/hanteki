@@ -32,7 +32,7 @@ class DeckSummary extends React.Component {
         let cardsToRender = [];
         let groupedCards = {};
 
-        let combinedCards = _.union(this.props.deck.objectiveCards, this.props.deck.mainDeckCards);
+        let combinedCards = _.union(this.props.deck.objectiveCards, this.props.deck.commandDeckCards);
 
         _.each(combinedCards, (card) => {
             let type = card.card.type;
@@ -82,7 +82,7 @@ class DeckSummary extends React.Component {
                     <div className='col-xs-8 col-sm-8'>
                         <div className='info-row row'><span>Affiliation:</span>{ this.props.deck.affiliation ? <span className={ 'pull-right' }>{ this.props.deck.affiliation.name }</span> : null }</div>
                         <div className='info-row row' ref='objectiveCount'><span>Objective Deck:</span><span className='pull-right'>{ this.props.deck.status.objectiveCount } cards</span></div>
-                        <div className='info-row row' ref='mainDeckDrawCount'><span>Main Deck:</span><span className='pull-right'>{ this.props.deck.status.mainDeckCount } cards</span></div>
+                        <div className='info-row row' ref='commandDeckDrawCount'><span>Main Deck:</span><span className='pull-right'>{ this.props.deck.status.commandDeckCount } cards</span></div>
                         <div className='info-row row'><span>Validity:</span>
                             <DeckStatus className='pull-right' status={ this.props.deck.status } />
                         </div>
